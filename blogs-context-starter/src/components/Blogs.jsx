@@ -4,19 +4,17 @@ import Spinner from './Spinner';
 import "./Blogs.css"
 
 const Blogs = () => {
-    //consume
-    const {posts,loading} = useContext(AppContext);
-    console.log("Printing inside blogs component");
-    console.log(posts);
-
+    const {posts, loading, error} = useContext(AppContext);
 
   return (
     <div className='w-11/12 max-w-[670px] h-screen py-8 flex flex-col gap-y-7 mt-[66px] mb-[70px]  justify-center items-center'>
     {
         loading ? 
-
         (<Spinner />) : 
-
+        error ?
+        (<div>
+            <p className='text-red-500'>{error}</p>
+        </div>) :
         (   
             posts.length === 0 ? 
             (<div>
