@@ -1,7 +1,6 @@
-import { createContext, useState } from "react";
+import { createContext, useCallback, useMemo, useState } from "react";
 import { baseUrl } from "../baseUrl";
 
-//step1
 export const AppContext = createContext();
 
 export default function AppContextProvider({children}) {
@@ -9,52 +8,42 @@ export default function AppContextProvider({children}) {
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(null);
+    const [error, setError] = useState(null);
 
-    //data filling pending
-
-    async function fetchBlogPosts(page = 1) {
+    const fetchBlogPosts = useCallback(async (page = 1) => {
         setLoading(true);
+        setError(null);
         let url = `${baseUrl}?page=${page}`;
-        console.log("printing the final URL");
-        console.log(url);
-        try{
+        try {
             const result = await fetch(url);
             const data = await result.json();
-            console.log(data);
             setPage(data.page);
             setPosts(data.posts);
-            setTotalPages(data.totalPages)
-        }
-        catch(error) {
-            console.log("Error in fetching data");
+            setTotalPages(data.totalPages);
+        } catch (err) {
+            setError("Failed to fetch blog posts. Please try again.");
             setPage(1);
             setPosts([]);
             setTotalPages(null);
         }
         setLoading(false);
-    }
+    }, []);
 
-    function handlePageChange(page) {
+    const handlePageChange = useCallback((page) => {
         setPage(page);
         fetchBlogPosts(page);
-    }
+    }, [fetchBlogPosts]);
 
-
-
-    const value = {
+    const value = useMemo(() => ({
         posts,
-        setPosts,
         loading,
-        setLoading,
         page,
-        setPage,
         totalPages,
-        setTotalPages,
+        error,
         fetchBlogPosts,
         handlePageChange
-    };
+    }), [posts, loading, page, totalPages, error, fetchBlogPosts, handlePageChange]);
 
-    //step2
     return <AppContext.Provider value={value}>
         {children}
     </AppContext.Provider>;
